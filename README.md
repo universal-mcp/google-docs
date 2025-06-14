@@ -1,6 +1,6 @@
 # Google-Docs Universal MCP Server
 
-This repository contains an implementation of an Google-Docs Universal MCP (Model Context Protocol) server. It provides a standardized interface for interacting with Google-Docs's SEO and backlink analysis tools through a unified API.
+This repository contains an implementation of an Google-Docs Universal MCP (Model Context Protocol) server. It provides a standardized interface for interacting with Google-Docs's tools and services through a unified API.
 
 The server is built using the Universal MCP framework.
 
