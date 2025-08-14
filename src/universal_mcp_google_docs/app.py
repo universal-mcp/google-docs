@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from universal_mcp.applications.application import APIApplication
 from universal_mcp.integrations import Integration
@@ -89,17 +89,17 @@ class GoogleDocsApp(APIApplication):
         document_id: str,
         start_index: int,
         end_index: int,
-        bold: Optional[bool] = None,
-        italic: Optional[bool] = None,
-        underline: Optional[bool] = None,
-        strikethrough: Optional[bool] = None,
-        small_caps: Optional[bool] = None,
-        font_size: Optional[float] = None,
-        font_family: Optional[str] = None,
-        font_weight: Optional[int] = None,
-        foreground_color: Optional[dict[str, float]] = None,
-        background_color: Optional[dict[str, float]] = None,
-        link_url: Optional[str] = None,
+        bold: bool | None = None,
+        italic: bool | None = None,
+        underline: bool | None = None,
+        strikethrough: bool | None = None,
+        small_caps: bool | None = None,
+        font_size: float | None = None,
+        font_family: str | None = None,
+        font_weight: int | None = None,
+        foreground_color: dict[str, float] | None = None,
+        background_color: dict[str, float] | None = None,
+        link_url: str | None = None,
     ) -> dict[str, Any]:
         """
         Applies text styling to a specified range of text in a Google Document.
