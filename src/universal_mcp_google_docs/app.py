@@ -204,6 +204,7 @@ class GoogleDocsApp(APIApplication):
         italic: bool = False,
         underline: bool = False,
         font_size: float = None,
+        link_url: str = None,
     ) -> dict[str, Any]:
         """
         Simplified text styling for Google Document - handles most common cases.
@@ -216,6 +217,7 @@ class GoogleDocsApp(APIApplication):
             italic: Whether the text should be italicized
             underline: Whether the text should be underlined
             font_size: The font size in points (e.g., 12.0 for 12pt)
+            link_url: URL to make the text a hyperlink
 
         Returns:
             A dictionary containing the Google Docs API response
@@ -248,6 +250,10 @@ class GoogleDocsApp(APIApplication):
         if font_size is not None:
             text_style["fontSize"] = {"magnitude": font_size, "unit": "PT"}
             fields_to_update.append("fontSize")
+            
+        if link_url is not None:
+            text_style["link"] = {"url": link_url}
+            fields_to_update.append("link")
         
         # If no styling requested, return early
         if not text_style:
@@ -273,4 +279,4 @@ class GoogleDocsApp(APIApplication):
         return response.json()
 
     def list_tools(self):
-        return [self.create_document, self.get_document, self.add_content, self.style_text, self.make_bold, self.style_text_simple]
+        return [self.create_document, self.get_document, self.add_content, self.style_text,  self.style_text_simple]
