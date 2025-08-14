@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from universal_mcp.applications.application import APIApplication
 from universal_mcp.integrations import Integration
@@ -84,5 +84,115 @@ class GoogleDocsApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
+    def style_text(
+        self,
+        document_id: str,
+        start_index: int,
+        end_index: int,
+        bold: Optional[bool] = None,
+        italic: Optional[bool] = None,
+        underline: Optional[bool] = None,
+        strikethrough: Optional[bool] = None,
+        small_caps: Optional[bool] = None,
+        font_size: Optional[float] = None,
+        font_family: Optional[str] = None,
+        font_weight: Optional[int] = None,
+        foreground_color: Optional[dict[str, float]] = None,
+        background_color: Optional[dict[str, float]] = None,
+        link_url: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        Applies text styling to a specified range of text in a Google Document.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            start_index: The zero-based start index of the text range to style
+            end_index: The zero-based end index of the text range to style (exclusive)
+            bold: Whether the text should be bold
+            italic: Whether the text should be italicized
+            underline: Whether the text should be underlined
+            strikethrough: Whether the text should be struck through
+            small_caps: Whether the text should be in small capital letters
+            font_size: The font size in points (e.g., 12.0 for 12pt)
+            font_family: The font family name (e.g., "Arial", "Times New Roman")
+            font_weight: The font weight (e.g., 400 for normal, 700 for bold)
+            foreground_color: RGB color dict with 'red', 'green', 'blue' values (0.0 to 1.0)
+            background_color: RGB color dict with 'red', 'green', 'blue' values (0.0 to 1.0)
+            link_url: URL to make the text a hyperlink
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the batch update operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            style, format, text, document, api, google-docs, batch, formatting, important
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the text style object
+        text_style = {}
+        
+        if bold is not None:
+            text_style["bold"] = bold
+        if italic is not None:
+            text_style["italic"] = italic
+        if underline is not None:
+            text_style["underline"] = underline
+        if strikethrough is not None:
+            text_style["strikethrough"] = strikethrough
+        if small_caps is not None:
+            text_style["smallCaps"] = small_caps
+        if font_size is not None:
+            text_style["fontSize"] = {"magnitude": font_size, "unit": "PT"}
+        if font_family is not None:
+            weighted_font_family = {"fontFamily": font_family}
+            if font_weight is not None:
+                weighted_font_family["weight"] = str(font_weight)
+            text_style["weightedFontFamily"] = weighted_font_family
+        if foreground_color is not None:
+            text_style["foregroundColor"] = {
+                "color": {
+                    "rgbColor": {
+                        "red": foreground_color.get("red", 0.0),
+                        "green": foreground_color.get("green", 0.0),
+                        "blue": foreground_color.get("blue", 0.0)
+                    }
+                }
+            }
+        if background_color is not None:
+            text_style["backgroundColor"] = {
+                "color": {
+                    "rgbColor": {
+                        "red": background_color.get("red", 0.0),
+                        "green": background_color.get("green", 0.0),
+                        "blue": background_color.get("blue", 0.0)
+                    }
+                }
+            }
+        if link_url is not None:
+            text_style["link"] = {"url": link_url}
+        
+        batch_update_data = {
+            "requests": [
+                {
+                    "updateTextStyle": {
+                        "range": {
+                            "startIndex": start_index,
+                            "endIndex": end_index
+                        },
+                        "textStyle": text_style,
+                        "fields": "*"
+                    }
+                }
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        response.raise_for_status()
+        return response.json()
+
     def list_tools(self):
-        return [self.create_document, self.get_document, self.add_content]
+        return [self.create_document, self.get_document, self.add_content, self.style_text]
