@@ -205,6 +205,8 @@ class GoogleDocsApp(APIApplication):
         underline: bool = False,
         font_size: float = None,
         link_url: str = None,
+        foreground_color: dict[str, float] = None,
+        background_color: dict[str, float] = None,
     ) -> dict[str, Any]:
         """
         Simplified text styling for Google Document - handles most common cases.
@@ -218,6 +220,8 @@ class GoogleDocsApp(APIApplication):
             underline: Whether the text should be underlined
             font_size: The font size in points (e.g., 12.0 for 12pt)
             link_url: URL to make the text a hyperlink
+            foreground_color: RGB color dict with 'red', 'green', 'blue' values (0.0 to 1.0)
+            background_color: RGB color dict with 'red', 'green', 'blue' values (0.0 to 1.0)
 
         Returns:
             A dictionary containing the Google Docs API response
@@ -254,6 +258,30 @@ class GoogleDocsApp(APIApplication):
         if link_url is not None:
             text_style["link"] = {"url": link_url}
             fields_to_update.append("link")
+            
+        if foreground_color is not None:
+            text_style["foregroundColor"] = {
+                "color": {
+                    "rgbColor": {
+                        "red": foreground_color.get("red", 0.0),
+                        "green": foreground_color.get("green", 0.0),
+                        "blue": foreground_color.get("blue", 0.0)
+                    }
+                }
+            }
+            fields_to_update.append("foregroundColor")
+            
+        if background_color is not None:
+            text_style["backgroundColor"] = {
+                "color": {
+                    "rgbColor": {
+                        "red": background_color.get("red", 0.0),
+                        "green": background_color.get("green", 0.0),
+                        "blue": background_color.get("blue", 0.0)
+                    }
+                }
+            }
+            fields_to_update.append("backgroundColor")
         
         # If no styling requested, return early
         if not text_style:
@@ -275,8 +303,7 @@ class GoogleDocsApp(APIApplication):
         }
         
         response = self._post(url, data=batch_update_data)
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def list_tools(self):
         return [self.create_document, self.get_document, self.add_content, self.style_text,  self.style_text_simple]
