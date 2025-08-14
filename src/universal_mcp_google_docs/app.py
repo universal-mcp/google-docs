@@ -150,7 +150,7 @@ class GoogleDocsApp(APIApplication):
         if font_family is not None:
             weighted_font_family = {"fontFamily": font_family}
             if font_weight is not None:
-                weighted_font_family["weight"] = str(font_weight)
+                weighted_font_family["weight"] = font_weight
             text_style["weightedFontFamily"] = weighted_font_family
         if foreground_color is not None:
             text_style["foregroundColor"] = {
@@ -194,5 +194,83 @@ class GoogleDocsApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
+
+    def style_text_simple(
+        self,
+        document_id: str,
+        start_index: int,
+        end_index: int,
+        bold: bool = False,
+        italic: bool = False,
+        underline: bool = False,
+        font_size: float = None,
+    ) -> dict[str, Any]:
+        """
+        Simplified text styling for Google Document - handles most common cases.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            start_index: The zero-based start index of the text range to style
+            end_index: The zero-based end index of the text range to style (exclusive)
+            bold: Whether the text should be bold
+            italic: Whether the text should be italicized
+            underline: Whether the text should be underlined
+            font_size: The font size in points (e.g., 12.0 for 12pt)
+
+        Returns:
+            A dictionary containing the Google Docs API response
+
+        Raises:
+            HTTPError: When the API request fails
+            RequestException: When there are network connectivity issues
+
+        Tags:
+            style, format, text, document, api, google-docs, simple
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the text style object with only common properties
+        text_style = {}
+        fields_to_update = []
+        
+        if bold:
+            text_style["bold"] = True
+            fields_to_update.append("bold")
+        
+        if italic:
+            text_style["italic"] = True
+            fields_to_update.append("italic")
+            
+        if underline:
+            text_style["underline"] = True
+            fields_to_update.append("underline")
+            
+        if font_size is not None:
+            text_style["fontSize"] = {"magnitude": font_size, "unit": "PT"}
+            fields_to_update.append("fontSize")
+        
+        # If no styling requested, return early
+        if not text_style:
+            return {"message": "No styling applied"}
+        
+        batch_update_data = {
+            "requests": [
+                {
+                    "updateTextStyle": {
+                        "range": {
+                            "startIndex": start_index,
+                            "endIndex": end_index
+                        },
+                        "textStyle": text_style,
+                        "fields": ",".join(fields_to_update)
+                    }
+                }
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        response.raise_for_status()
+        return response.json()
+
     def list_tools(self):
-        return [self.create_document, self.get_document, self.add_content, self.style_text]
+        return [self.create_document, self.get_document, self.add_content, self.style_text, self.make_bold, self.style_text_simple]
