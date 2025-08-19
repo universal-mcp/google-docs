@@ -228,13 +228,15 @@ class GoogleDocsApp(APIApplication):
         
         # Build the delete content range request
         delete_request: dict[str, Any] = {
-            "startIndex": start_index,
-            "endIndex": end_index
+            "range": {
+                "startIndex": start_index,
+                "endIndex": end_index
+            }
         }
         
         # Add optional parameters if provided
         if segment_id is not None:
-            delete_request["segmentId"] = segment_id
+            delete_request["range"]["segmentId"] = segment_id
         if tab_id is not None:
             delete_request["tabId"] = tab_id
         
@@ -245,8 +247,7 @@ class GoogleDocsApp(APIApplication):
         }
         
         response = self._post(url, data=batch_update_data)
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def list_tools(self):
         return [self.create_document, self.get_document, self.add_content, self.style_text, self.delete_content]
