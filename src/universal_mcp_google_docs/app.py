@@ -277,7 +277,7 @@ class GoogleDocsApp(APIApplication):
             RequestException: When there are network connectivity issues or API endpoint problems
 
         Tags:
-            table, insert, document, api, google-docs, batch, content-management, important
+            table, insert, document, api, google-docs, batch, content-management
         """
         url = f"{self.base_api_url}/{document_id}:batchUpdate"
         
@@ -309,5 +309,409 @@ class GoogleDocsApp(APIApplication):
         response = self._post(url, data=batch_update_data)
         return self._handle_response(response)
 
+    def create_footer(
+        self,
+        document_id: str,
+        footer_type: str = "DEFAULT",
+        section_break_location_index: int = None,
+        section_break_segment_id: str = None,
+        section_break_tab_id: str = None,
+    ) -> dict[str, Any]:
+        """
+        Creates a Footer in a Google Document.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            footer_type: The type of footer to create (DEFAULT, HEADER_FOOTER_TYPE_UNSPECIFIED)
+            section_break_location_index: The index of the SectionBreak location (optional)
+            section_break_segment_id: The segment ID of the SectionBreak location (optional)
+            section_break_tab_id: The tab ID of the SectionBreak location (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the create footer operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            footer, create, document, api, google-docs, batch, content-management
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the create footer request
+        create_footer_request = {
+            "type": footer_type
+        }
+        
+        # Add section break location if provided
+        if section_break_location_index is not None:
+            section_break_location = {
+                "index": section_break_location_index
+            }
+            
+            if section_break_segment_id is not None:
+                section_break_location["segmentId"] = section_break_segment_id
+                
+            if section_break_tab_id is not None:
+                section_break_location["tabId"] = section_break_tab_id
+                
+            create_footer_request["sectionBreakLocation"] = section_break_location
+        
+        batch_update_data = {
+            "requests": [
+                {"createFooter": create_footer_request}
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        return self._handle_response(response)
+
+    def create_footnote(
+        self,
+        document_id: str,
+        location_index: int = None,
+        location_segment_id: str = None,
+        location_tab_id: str = None,
+        end_of_segment_location: bool = False,
+        end_of_segment_segment_id: str = None,
+        end_of_segment_tab_id: str = None,
+    ) -> dict[str, Any]:
+        """
+        Creates a Footnote segment and inserts a new FootnoteReference at the given location.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            location_index: The index where to insert the footnote reference (optional)
+            location_segment_id: The segment ID for the location (optional, must be empty for body)
+            location_tab_id: The tab ID for the location (optional)
+            end_of_segment_location: Whether to insert at end of segment (optional)
+            end_of_segment_segment_id: The segment ID for end of segment location (optional)
+            end_of_segment_tab_id: The tab ID for end of segment location (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the create footnote operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            footnote, create, document, api, google-docs, batch, content-management
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the create footnote request
+        create_footnote_request = {}
+        
+        if end_of_segment_location:
+            # Use endOfSegmentLocation
+            end_of_segment_location_obj = {}
+            
+            if end_of_segment_segment_id is not None:
+                end_of_segment_location_obj["segmentId"] = end_of_segment_segment_id
+                
+            if end_of_segment_tab_id is not None:
+                end_of_segment_location_obj["tabId"] = end_of_segment_tab_id
+                
+            create_footnote_request["endOfSegmentLocation"] = end_of_segment_location_obj
+        else:
+            # Use specific location
+            location = {
+                "index": location_index
+            }
+            
+            if location_segment_id is not None:
+                location["segmentId"] = location_segment_id
+                
+            if location_tab_id is not None:
+                location["tabId"] = location_tab_id
+                
+            create_footnote_request["location"] = location
+        
+        batch_update_data = {
+            "requests": [
+                {"createFootnote": create_footnote_request}
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        return self._handle_response(response)
+
+    def delete_footer(
+        self,
+        document_id: str,
+        footer_id: str,
+        tab_id: str = None,
+    ) -> dict[str, Any]:
+        """
+        Deletes a Footer from the document.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            footer_id: The ID of the footer to delete
+            tab_id: The tab that contains the footer to delete (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the delete footer operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            footer, delete, remove, document, api, google-docs, batch, content-management
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the delete footer request
+        delete_footer_request = {
+            "footerId": footer_id
+        }
+        
+        # Add tab_id if provided
+        if tab_id is not None:
+            delete_footer_request["tabId"] = tab_id
+        
+        batch_update_data = {
+            "requests": [
+                {"deleteFooter": delete_footer_request}
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        return self._handle_response(response)
+
+    def create_header(
+        self,
+        document_id: str,
+        header_type: str = "DEFAULT",
+        section_break_location_index: int = None,
+        section_break_segment_id: str = None,
+        section_break_tab_id: str = None,
+    ) -> dict[str, Any]:
+        """
+        Creates a Header in a Google Document.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            header_type: The type of header to create (DEFAULT, HEADER_FOOTER_TYPE_UNSPECIFIED)
+            section_break_location_index: The index of the SectionBreak location (optional)
+            section_break_segment_id: The segment ID of the SectionBreak location (optional)
+            section_break_tab_id: The tab ID of the SectionBreak location (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the create header operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            header, create, document, api, google-docs, batch, content-management, important
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the create header request
+        create_header_request = {
+            "type": header_type
+        }
+        
+        # Add section break location if provided
+        if section_break_location_index is not None:
+            section_break_location = {
+                "index": section_break_location_index
+            }
+            
+            if section_break_segment_id is not None:
+                section_break_location["segmentId"] = section_break_segment_id
+                
+            if section_break_tab_id is not None:
+                section_break_location["tabId"] = section_break_tab_id
+                
+            create_header_request["sectionBreakLocation"] = section_break_location
+        
+        batch_update_data = {
+            "requests": [
+                {"createHeader": create_header_request}
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        return self._handle_response(response)
+
+    def delete_header(
+        self,
+        document_id: str,
+        header_id: str,
+        tab_id: str = None,
+    ) -> dict[str, Any]:
+        """
+        Deletes a Header from the document.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            header_id: The ID of the header to delete
+            tab_id: The tab containing the header to delete (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the delete header operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            header, delete, remove, document, api, google-docs, batch, content-management
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the delete header request
+        delete_header_request = {
+            "headerId": header_id
+        }
+        
+        # Add tab_id if provided
+        if tab_id is not None:
+            delete_header_request["tabId"] = tab_id
+        
+        batch_update_data = {
+            "requests": [
+                {"deleteHeader": delete_header_request}
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        return self._handle_response(response)
+
+    def create_paragraph_bullets(
+        self,
+        document_id: str,
+        start_index: int,
+        end_index: int,
+        bullet_preset: str,
+        segment_id: str = None,
+        tab_id: str = None,
+    ) -> dict[str, Any]:
+        """
+        Creates bullets for all of the paragraphs that overlap with the given range.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            start_index: The zero-based start index of the range to apply bullets to
+            end_index: The zero-based end index of the range to apply bullets to (exclusive)
+            bullet_preset: The kind of bullet glyphs to use. Available options:
+                - BULLET_GLYPH_PRESET_UNSPECIFIED: The bullet glyph preset is unspecified
+                - BULLET_DISC_CIRCLE_SQUARE: DISC, CIRCLE and SQUARE for first 3 nesting levels
+                - BULLET_DIAMONDX_ARROW3D_SQUARE: DIAMONDX, ARROW3D and SQUARE for first 3 nesting levels
+                - BULLET_CHECKBOX: CHECKBOX bullet glyphs for all nesting levels
+                - BULLET_ARROW_DIAMOND_DISC: ARROW, DIAMOND and DISC for first 3 nesting levels
+                - BULLET_STAR_CIRCLE_SQUARE: STAR, CIRCLE and SQUARE for first 3 nesting levels
+                - BULLET_ARROW3D_CIRCLE_SQUARE: ARROW3D, CIRCLE and SQUARE for first 3 nesting levels
+                - BULLET_LEFTTRIANGLE_DIAMOND_DISC: LEFTTRIANGLE, DIAMOND and DISC for first 3 nesting levels
+                - BULLET_DIAMONDX_HOLLOWDIAMOND_SQUARE: DIAMONDX, HOLLOWDIAMOND and SQUARE for first 3 nesting levels
+                - BULLET_DIAMOND_CIRCLE_SQUARE: DIAMOND, CIRCLE and SQUARE for first 3 nesting levels
+                - NUMBERED_DECIMAL_ALPHA_ROMAN: DECIMAL, ALPHA and ROMAN with periods
+                - NUMBERED_DECIMAL_ALPHA_ROMAN_PARENS: DECIMAL, ALPHA and ROMAN with parenthesis
+                - NUMBERED_DECIMAL_NESTED: DECIMAL with nested numbering (1., 1.1., 2., 2.2.)
+                - NUMBERED_UPPERALPHA_ALPHA_ROMAN: UPPERALPHA, ALPHA and ROMAN with periods
+                - NUMBERED_UPPERROMAN_UPPERALPHA_DECIMAL: UPPERROMAN, UPPERALPHA and DECIMAL with periods
+                - NUMBERED_ZERODECIMAL_ALPHA_ROMAN: ZERODECIMAL, ALPHA and ROMAN with periods
+            segment_id: The segment ID for the range (optional)
+            tab_id: The tab ID for the range (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the create bullets operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            bullets, list, paragraph, document, api, google-docs, batch, content-management
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the range object
+        range_obj = {
+            "startIndex": start_index,
+            "endIndex": end_index
+        }
+        
+        # Add optional parameters if provided
+        if segment_id is not None:
+            range_obj["segmentId"] = segment_id
+        if tab_id is not None:
+            range_obj["tabId"] = tab_id
+        
+        batch_update_data = {
+            "requests": [
+                {
+                    "createParagraphBullets": {
+                        "range": range_obj,
+                        "bulletPreset": bullet_preset
+                    }
+                }
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        return self._handle_response(response)
+
+    def delete_paragraph_bullets(
+        self,
+        document_id: str,
+        start_index: int,
+        end_index: int,
+        segment_id: str = None,
+        tab_id: str = None,
+    ) -> dict[str, Any]:
+        """
+        Deletes bullets from all of the paragraphs that overlap with the given range.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            start_index: The zero-based start index of the range to remove bullets from
+            end_index: The zero-based end index of the range to remove bullets from (exclusive)
+            segment_id: The segment ID for the range (optional)
+            tab_id: The tab ID for the range (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the delete bullets operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            bullets, delete, remove, list, paragraph, document, api, google-docs, batch, content-management
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the range object
+        range_obj = {
+            "startIndex": start_index,
+            "endIndex": end_index
+        }
+        
+        # Add optional parameters if provided
+        if segment_id is not None:
+            range_obj["segmentId"] = segment_id
+        if tab_id is not None:
+            range_obj["tabId"] = tab_id
+        
+        batch_update_data = {
+            "requests": [
+                {
+                    "deleteParagraphBullets": {
+                        "range": range_obj
+                    }
+                }
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        return self._handle_response(response)
+
     def list_tools(self):
-        return [self.create_document, self.get_document, self.add_content, self.style_text, self.style_text_simple, self.delete_content, self.insert_table]
+        return [self.create_document, self.get_document, self.add_content, self.style_text, self.delete_content, self.insert_table, self.create_footer, self.create_footnote, self.delete_footer, self.create_header, self.delete_header, self.create_paragraph_bullets, self.delete_paragraph_bullets]
