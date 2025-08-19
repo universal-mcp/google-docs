@@ -249,5 +249,65 @@ class GoogleDocsApp(APIApplication):
         response = self._post(url, data=batch_update_data)
         return self._handle_response(response)
 
+    def insert_table(
+        self,
+        document_id: str,
+        location_index: int,
+        rows: int,
+        columns: int,
+        segment_id: str = None,
+        tab_id: str = None,
+    ) -> dict[str, Any]:
+        """
+        Inserts a table at the specified location in a Google Document.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            location_index: The zero-based index where the table should be inserted
+            rows: The number of rows in the table
+            columns: The number of columns in the table
+            segment_id: The ID of the header, footer or footnote segment (optional)
+            tab_id: The ID of the tab containing the location (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the insert table operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            table, insert, document, api, google-docs, batch, content-management, important
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the location object according to Google Docs API specification
+        location = {
+            "index": location_index
+        }
+        
+        # Add segment_id if provided (empty string for document body, specific ID for header/footer/footnote)
+        if segment_id is not None:
+            location["segmentId"] = segment_id
+            
+        # Add tab_id if provided
+        if tab_id is not None:
+            location["tabId"] = tab_id
+        
+        batch_update_data = {
+            "requests": [
+                {
+                    "insertTable": {
+                        "location": location,
+                        "rows": rows,
+                        "columns": columns
+                    }
+                }
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        return self._handle_response(response)
+
     def list_tools(self):
-        return [self.create_document, self.get_document, self.add_content, self.style_text, self.delete_content]
+        return [self.create_document, self.get_document, self.add_content, self.style_text, self.style_text_simple, self.delete_content, self.insert_table]
