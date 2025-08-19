@@ -196,5 +196,57 @@ class GoogleDocsApp(APIApplication):
         response = self._post(url, data=batch_update_data)
         return self._handle_response(response)
 
+    def delete_content(
+        self,
+        document_id: str,
+        start_index: int,
+        end_index: int,
+        segment_id: str | None = None,
+        tab_id: str | None = None,
+    ) -> dict[str, Any]:
+        """
+        Deletes content from a specified range in a Google Document.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            start_index: The zero-based start index of the content range to delete
+            end_index: The zero-based end index of the content range to delete (exclusive)
+            segment_id: The ID of the header, footer, or footnote segment (optional)
+            tab_id: The ID of the tab containing the content to delete (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response after performing the delete operation
+
+        Raises:
+            HTTPError: When the API request fails, such as invalid document_id or insufficient permissions
+            RequestException: When there are network connectivity issues or API endpoint problems
+
+        Tags:
+            delete, remove, content, document, api, google-docs, batch, content-management, important
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the delete content range request
+        delete_request: dict[str, Any] = {
+            "startIndex": start_index,
+            "endIndex": end_index
+        }
+        
+        # Add optional parameters if provided
+        if segment_id is not None:
+            delete_request["segmentId"] = segment_id
+        if tab_id is not None:
+            delete_request["tabId"] = tab_id
+        
+        batch_update_data = {
+            "requests": [
+                {"deleteContentRange": delete_request}
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        response.raise_for_status()
+        return response.json()
+
     def list_tools(self):
-        return [self.create_document, self.get_document, self.add_content, self.style_text]
+        return [self.create_document, self.get_document, self.add_content, self.style_text, self.delete_content]
