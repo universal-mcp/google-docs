@@ -196,6 +196,95 @@ class GoogleDocsApp(APIApplication):
         response = self._post(url, data=batch_update_data)
         return self._handle_response(response)
 
+    def update_paragraph_style(
+        self,
+        document_id: str,
+        start_index: int,
+        end_index: int,
+        named_style_type: str | None = None,
+        alignment: str | None = None,
+        direction: str | None = None,
+        spacing_mode: str | None = None,
+        segment_id: str | None = None,
+        tab_id: str | None = None,
+    ) -> dict[str, Any]:
+        """
+        Updates paragraph styling for a specified range in a Google Document.
+
+        Args:
+            document_id: The unique identifier of the Google Document to be updated
+            start_index: The zero-based start index of the paragraph range to style
+            end_index: The zero-based end index of the paragraph range to style (exclusive)
+            named_style_type: The named style type (e.g., 'NORMAL_TEXT', 'TITLE', 'HEADING_1', etc.)
+            alignment: The paragraph alignment ('START', 'CENTER', 'END', 'JUSTIFIED')
+            direction: The content direction ('LEFT_TO_RIGHT', 'RIGHT_TO_LEFT')
+            spacing_mode: The spacing mode ('NEVER_COLLAPSE', 'COLLAPSE_LISTS')
+            segment_id: The segment ID for the range (optional)
+            tab_id: The tab ID for the range (optional)
+
+        Returns:
+            A dictionary containing the Google Docs API response
+
+        Raises:
+            HTTPError: When the API request fails
+            RequestException: When there are network connectivity issues
+
+        Tags:
+            style, format, paragraph, document, api, google-docs, batch, content-management
+        """
+        url = f"{self.base_api_url}/{document_id}:batchUpdate"
+        
+        # Build the paragraph style object with only specified properties
+        paragraph_style = {}
+        fields_to_update = []
+        
+        if named_style_type is not None:
+            paragraph_style["namedStyleType"] = named_style_type
+            fields_to_update.append("namedStyleType")
+        
+        if alignment is not None:
+            paragraph_style["alignment"] = alignment
+            fields_to_update.append("alignment")
+            
+        if direction is not None:
+            paragraph_style["direction"] = direction
+            fields_to_update.append("direction")
+            
+        if spacing_mode is not None:
+            paragraph_style["spacingMode"] = spacing_mode
+            fields_to_update.append("spacingMode")
+        
+        # If no styling requested, return early
+        if not paragraph_style:
+            return {"message": "No paragraph styling applied"}
+        
+        # Build the range object
+        range_obj: dict[str, Any] = {
+            "startIndex": start_index,
+            "endIndex": end_index
+        }
+        
+        # Add optional parameters if provided
+        if segment_id is not None:
+            range_obj["segmentId"] = segment_id
+        if tab_id is not None:
+            range_obj["tabId"] = tab_id
+        
+        batch_update_data = {
+            "requests": [
+                {
+                    "updateParagraphStyle": {
+                        "range": range_obj,
+                        "paragraphStyle": paragraph_style,
+                        "fields": ",".join(fields_to_update)
+                    }
+                }
+            ]
+        }
+        
+        response = self._post(url, data=batch_update_data)
+        return self._handle_response(response)
+
     def delete_content(
         self,
         document_id: str,
@@ -714,4 +803,4 @@ class GoogleDocsApp(APIApplication):
         return self._handle_response(response)
 
     def list_tools(self):
-        return [self.create_document, self.get_document, self.add_content, self.style_text, self.delete_content, self.insert_table, self.create_footer, self.create_footnote, self.delete_footer, self.create_header, self.delete_header, self.create_paragraph_bullets, self.delete_paragraph_bullets]
+        return [self.create_document, self.get_document, self.add_content, self.style_text, self.delete_content, self.insert_table, self.create_footer, self.create_footnote, self.delete_footer, self.create_header, self.delete_header, self.create_paragraph_bullets, self.delete_paragraph_bullets,self.update_paragraph_style]
