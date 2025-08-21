@@ -22,3 +22,4 @@ This is automatically generated from OpenAPI schema for the GoogleDocsApp API.
 | `delete_header` | Deletes a Header from the document. |
 | `create_paragraph_bullets` | Creates bullets for all of the paragraphs that overlap with the given range. |
 | `delete_paragraph_bullets` | Deletes bullets from all of the paragraphs that overlap with the given range. |
+| `update_paragraph_style` | Updates paragraph styling for a specified range in a Google Document. |
